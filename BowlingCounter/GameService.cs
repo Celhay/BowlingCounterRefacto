@@ -1,13 +1,16 @@
 ﻿using System.Net.Mime;
 using BowlingCounter.Interfaces;
+using BowlingCounter.Model;
 
 namespace BowlingCounter;
 using Microsoft.Extensions.Logging;
 
 public class GameService :IGame
 {
-    private int[][] firstThrows;
-    private int[][] secondThrows;
+    private int[][] _firstThrows;
+    private int[][] _secondThrows;
+    private int _numPlayers;
+    private List<Player> _joueurs;
 
     private readonly ILogger _logger;
 
@@ -20,8 +23,16 @@ public class GameService :IGame
 
     public void InitGame(int numPlayers)
     {
-        firstThrows = new int[numPlayers][];
-        secondThrows = new int[numPlayers][];
+        _joueurs = new List<Player>();
+        _numPlayers = numPlayers;
+        _firstThrows = new int[numPlayers][];
+        _secondThrows = new int[numPlayers][];
+        for (int i = 0; i < numPlayers; i++)
+        {
+            _firstThrows[i] = new int[10];
+            _secondThrows[i] = new int[10];
+            _joueurs.Add(new Player(i+1));
+        }
     }
 
     public void Start()
@@ -70,62 +81,65 @@ public class GameService :IGame
         return inputInt;
 
     }
+    private int GetValidThrow()
+    {
+        string? inputString = Console.ReadLine();
+        int inputInt;
+        while (!int.TryParse(inputString, out inputInt) && inputInt > 10)
+        {
+            Console.WriteLine("Please enter a correct type of skittles !");
+            inputString = Console.ReadLine();
+        }
+        return inputInt;
+
+    }
     public void GoodByeGame()
     {
         Console.WriteLine("Thanks for playing.\n GoodBye");
         Console.WriteLine("Press any key to close");
-        Console.ReadLine();
+        Console.ReadKey();
         
     }
     public void Play()
     {
-        Console.Write("Enter number of players: ");
-        int numPlayers = GetIntInput();
-
-        int[][] firstThrows = new int[numPlayers][];
-        int[][] secondThrows = new int[numPlayers][];
-
-        for (int i = 0; i < numPlayers; i++)
+        for (int lancer = 0; lancer < 10; lancer++)
         {
-            firstThrows[i] = new int[10];
-            secondThrows[i] = new int[10];
-        }
-
-        for (int i = 0; i < 10; i++)
-        {
-            for (int player = 0; player < numPlayers; player++)
+            for (int player = 0; player < _numPlayers; player++)
             {
                 Console.WriteLine("Player " + (player + 1));
                 Console.Write("Enter first throw: ");
-                firstThrows[player][i] = GetIntInput();
+                _firstThrows[player][lancer] = GetValidThrow();
                 Console.Write("Enter second throw: ");
-                secondThrows[player][i] = GetIntInput();
+                _secondThrows[player][lancer] = GetValidThrow();
 
-                int totalScore = 0;
-                for (int j = 0; j <= i; j++)
+                
+                for (int j = 0; j <= lancer; j++)
                 {
-                    totalScore += firstThrows[player][j] + secondThrows[player][j];
-                    if (j < i && firstThrows[player][j] == 10) // strike
+                    _joueurs[player].TotalScore += _firstThrows[player][j] + _secondThrows[player][j];
+                    if (_firstThrows[player][j] == 10) // strike
                     {
-                        totalScore += firstThrows[player][j + 1] + secondThrows[player][j + 1];
+                        _joueurs[player].TotalScore += _firstThrows[player][j + 1] + _secondThrows[player][j + 1];
                     }
-                    else if (firstThrows[player][j] + secondThrows[player][j] == 10) // spare
+                    else if (_firstThrows[player][j] + _secondThrows[player][j] == 10) // spare
                     {
-                        totalScore += firstThrows[player][j + 1];
+                        _joueurs[player].TotalScore += _firstThrows[player][j + 1];
                     }
                 }
 
-                Console.WriteLine("Total score: " + totalScore);
-
-                // Print the throws in a table
+                Console.WriteLine("Total score: " + _joueurs[player].TotalScore);
+                
                 Console.WriteLine("Throws:");
-                for (int j = 0; j <= i; j++)
+                for (int j = 0; j <= lancer; j++)
                 {
-                    Console.Write("| " + firstThrows[player][j] + " " + secondThrows[player][j] + " ");
+                    Console.Write("| " + _firstThrows[player][j] + " " + _secondThrows[player][j] + " ");
                 }
 
                 Console.WriteLine("|");
             }
         }
+        Console.WriteLine("Fin de la partie");
+        var gagnant = _joueurs.MaxBy(x => x.TotalScore);
+        Console.WriteLine($"The winner is Player {gagnant.PlayerId} avec un score de {gagnant.TotalScore}");
+
     }
 }
