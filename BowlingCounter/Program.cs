@@ -9,7 +9,5 @@ using Microsoft.Extensions.Configuration.Json;
 var game = new GameService(new LoggerFactory());
 
 game.Start();
-Console.Write("Enter number of players: ");
-game.InitGame(int.Parse(Console.ReadLine()));
 
 

@@ -1,4 +1,5 @@
-﻿using BowlingCounter.Interfaces;
+﻿using System.Net.Mime;
+using BowlingCounter.Interfaces;
 
 namespace BowlingCounter;
 using Microsoft.Extensions.Logging;
@@ -32,45 +33,54 @@ public class GameService :IGame
 
         Console.WriteLine("MENU : ");
         Console.WriteLine("1- Start a new game");
-        Console.WriteLine("2- Say \"Hello\"");
         Console.WriteLine("2- Exit");
 
         try
         {
-            var choice = int.Parse(Console.ReadLine());
-            switch (choice)
+            var choice = GetIntInput();
+            if(choice == 1)
             {
-                case 1:
-                    Console.Write("Enter number of players: ");
-                    int numPlayers = int.Parse(Console.ReadLine());
-                    InitGame(numPlayers);
-                    Play();
-                    break;
-                case 2:
-                    Console.Write("Hello");
-                    break;
-                default:
-                    GoodByeGame();
-                    break;
+                Console.Write("Enter number of players: ");
+                int numPlayers = GetIntInput();
+                InitGame(numPlayers);
+                Play();
+            }else
+            {
+                GoodByeGame();
             }
+            
         }
         catch (Exception e)
         {
             GoodByeGame();
-            _logger.LogWarning(e.Message);
+            // _logger.LogWarning(e.Message);
+            throw e;
         }
     }
 
+    private int GetIntInput()
+    {
+        string? inputString = Console.ReadLine();
+        int inputInt;
+        while (!int.TryParse(inputString, out inputInt))
+        {
+            Console.WriteLine("Please enter a correct type of numbers !");
+            inputString = Console.ReadLine();
+        }
+        return inputInt;
+
+    }
     public void GoodByeGame()
     {
         Console.WriteLine("Thanks for playing.\n GoodBye");
         Console.WriteLine("Press any key to close");
-        Console.ReadKey();
+        Console.ReadLine();
+        
     }
     public void Play()
     {
         Console.Write("Enter number of players: ");
-        int numPlayers = int.Parse(Console.ReadLine());
+        int numPlayers = GetIntInput();
 
         int[][] firstThrows = new int[numPlayers][];
         int[][] secondThrows = new int[numPlayers][];
@@ -87,9 +97,9 @@ public class GameService :IGame
             {
                 Console.WriteLine("Player " + (player + 1));
                 Console.Write("Enter first throw: ");
-                firstThrows[player][i] = int.Parse(Console.ReadLine());
+                firstThrows[player][i] = GetIntInput();
                 Console.Write("Enter second throw: ");
-                secondThrows[player][i] = int.Parse(Console.ReadLine());
+                secondThrows[player][i] = GetIntInput();
 
                 int totalScore = 0;
                 for (int j = 0; j <= i; j++)
